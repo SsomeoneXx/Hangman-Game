@@ -7,7 +7,6 @@ const wordElement = document.querySelector(".word"),
 
 let guesses = document.querySelector(".guesses");
 let currentGuesses = 0;
-let word, hiddenWord, arrayOfWord;
 
 function getRandomWord(wordList) {
   let { word, hint } = wordList[Math.floor(Math.random() * wordList.length)];
@@ -15,55 +14,62 @@ function getRandomWord(wordList) {
 }
 
 function init() {
-  ({ word, hint } = getRandomWord(wordList));
-  hiddenWord = Array.from(word, () => "_");
-  arrayOfWord = word.split("");
+  let { word, hint } = getRandomWord(wordList);
+  let hiddenWord = Array.from(word, (x) => "_");
 
   wordElement.textContent = hiddenWord.join("");
-  hintElement.textContent = `Hint: ${hint}`;
+  hintElement.textContent = `Hint : ${hint}`;
 
-  window.addEventListener("keydown", (e) => handleKey(e.key.toUpperCase()));
+  window.addEventListener("keydown", (e) => {
+    keyBoardFunctionalities(word, hiddenWord, e.key.toUpperCase());
+  });
   keyBoard.forEach((key) => {
-    key.addEventListener("click", (e) =>
-      handleKey(e.target.textContent.toUpperCase())
-    );
+    key.addEventListener("click", (e) => {
+      keyBoardFunctionalities(
+        word,
+        hiddenWord,
+        e.target.textContent.toUpperCase()
+      );
+    });
   });
 }
+init();
 
-function handleKey(key) {
+function keyBoardFunctionalities(word, hiddenWord, key) {
+  let arrayOfWord = word.split("");
+
   if (!/[A-Z]/.test(key) || key.length !== 1 || hiddenWord.includes(key)) {
     alert("Invalid key try again");
     return;
   }
 
+  if (!arrayOfWord.includes(key)) {
+    checkInaccuracyOrAccuracy("incorrect", key);
+  }
   if (arrayOfWord.includes(key)) {
-    hiddenWord.forEach((_, index) => {
-      if (arrayOfWord[index] === key) hiddenWord[index] = key;
+    arrayOfWord.forEach((letter, index) => {
+      if (letter === key) {
+        hiddenWord[index] = key;
+        checkInaccuracyOrAccuracy("correct", key);
+      }
     });
     wordElement.textContent = hiddenWord.join("");
-    checkInaccuracyOrAccuracy("correct", key);
   } else {
-    if (currentGuesses >= 6) {
+    if (currentGuesses == 6) {
       showDefeat();
       return;
     }
     currentGuesses++;
     guesses.textContent = currentGuesses;
     hangmanImage.src = `images/hangman-${currentGuesses}.svg`;
-    checkInaccuracyOrAccuracy("incorrect", key);
   }
 }
-
-function showDefeat() {
-  alert("Game Over!");
-}
+function showDefeat() {}
 
 function checkInaccuracyOrAccuracy(add_class, key) {
   keyBoard.find((keyInBoard) => {
-    if (keyInBoard.textContent === key) {
+    if (keyInBoard.textContent == key) {
       keyInBoard.classList.add(add_class);
     }
   });
 }
-
-init();
